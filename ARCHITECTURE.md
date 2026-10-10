@@ -161,7 +161,7 @@ Server never receives a symmetric key or plaintext on any of these.
 ```
 qr-snowball/
   api/index.py              # Vercel entrypoint: re-exports the ASGI app
-  vercel.json               # routes /api/* to the function; /c/ /g/ -> index.html
+  vercel.json               # two services: web (static /public) + api (fastapi)
   requirements.txt          # Vercel installs these
   backend/
     requirements.txt
@@ -179,5 +179,8 @@ qr-snowball/
 2. Set env vars: `RELAY_SECRET` (stable session/challenge signing key),
    `RELAY_RP_ID` (your domain, e.g. `qr-snowball.vercel.app`),
    `RELAY_ORIGIN` (`https://<domain>`).
-3. Deploy. `vercel.json` sends `/api/*` to the Python function and serves the PWA
-   from `/public`; `/c/*` and `/g/*` fall back to the app shell.
+3. Deploy. `vercel.json` defines two **services** behind one domain:
+   - `web` — static PWA from `/public` (public catch-all `/*`).
+   - `api` — the FastAPI function (`api/index.py`), public only under `/api/*`.
+   `/c/*` and `/g/*` rewrite to the app shell. There are no service-to-service
+   bindings: the browser calls `/api/*` on the same origin.
