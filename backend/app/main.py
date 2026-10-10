@@ -25,14 +25,10 @@ for r in (webauthn_router, keys_router, tokens_router, connections_router, group
 
 @app.get("/api/health")
 def health():
-    # env_hints lists only the NAMES of Blob/OIDC-related env vars present (never
-    # their values) — a safe way to see what Vercel actually injected.
-    hints = sorted(k for k in os.environ if "BLOB" in k or "OIDC" in k or k == "VERCEL")
     return {
         "ok": True,
         "storage": "blob" if store.USE_BLOB else "local-fs",
         "blob_auth": store.auth_mode(),  # token | oidc | none
-        "env_hints": hints,
     }
 
 
