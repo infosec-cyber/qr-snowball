@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0f17" />
+  <title>Relay — QR contact network</title>
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand" data-act="home">◈ Relay</div>
+    <nav>
+      <button class="ghost" data-act="scan">Scan</button>
+      <button class="ghost" data-act="logout">Sign out</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- welcome / onboarding -->
+    <section data-view="welcome" hidden>
+      <div class="hero">
+        <h1>Carry your card as a QR.</h1>
+        <p class="muted">End-to-end encrypted. The server only ever holds ciphertext —
+          your details are unlocked by the key hidden in the QR, never by us.</p>
+        <p id="welcome-hint" class="hint"></p>
+        <div class="stack">
+          <button class="primary" data-act="register">Create my identity</button>
+          <button class="ghost" data-act="login">I already have one</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- home -->
+    <section data-view="home" hidden>
+      <div id="me-card"></div>
+      <div id="me-qr-wrap" class="qr-wrap" hidden>
+        <canvas id="me-qr"></canvas>
+        <code id="me-link" class="link"></code>
+        <div class="stack-h">
+          <button class="ghost" data-act="copy-link">Copy link</button>
+          <button class="ghost" data-act="edit">Edit card</button>
+        </div>
+      </div>
+      <div class="section-head"><h2>Connections</h2></div>
+      <div id="connections"></div>
+      <div class="section-head"><h2>Groups</h2>
+        <button class="primary small" data-act="new-group">New group</button></div>
+    </section>
+
+    <!-- card editor -->
+    <section data-view="card" hidden>
+      <h2>Your card</h2>
+      <form id="card-form" onsubmit="return false">
+        <label>Name<input id="f_name" autocomplete="name" /></label>
+        <label>Title / role<input id="f_title" /></label>
+        <label>Phone<input id="f_phone" autocomplete="tel" /></label>
+        <label>Email<input id="f_email" autocomplete="email" /></label>
+        <label>Social / link<input id="f_social" /></label>
+        <label>Note<input id="f_note" /></label>
+        <div class="stack-h">
+          <button class="primary" data-act="save-card">Save & make QR</button>
+          <button class="ghost" data-act="home">Cancel</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- scanned peer -->
+    <section data-view="peer" hidden>
+      <h2>Scanned card</h2>
+      <div id="peer-card"></div>
+      <div class="stack-h">
+        <button class="primary" id="peer-connect" hidden>Connect</button>
+        <button class="ghost" data-act="home">Done</button>
+      </div>
+    </section>
+
+    <!-- scanner -->
+    <section data-view="scan" hidden>
+      <h2>Scan a Relay QR</h2>
+      <div id="reader"></div>
+      <button class="ghost" data-act="stop-scan">Cancel</button>
+    </section>
+
+    <!-- group -->
+    <section data-view="group" hidden>
+      <h2>Group</h2>
+      <div class="qr-wrap">
+        <canvas id="group-qr"></canvas>
+        <code id="group-link" class="link"></code>
+        <p class="muted">Show this QR to add the next person. They join and re-share the same code — the group snowballs.</p>
+      </div>
+      <div class="section-head"><h2>Members</h2></div>
+      <div id="group-roster"></div>
+      <button class="ghost" data-act="home">Back</button>
+    </section>
+  </main>
+
+  <div id="toast" class="toast"></div>
+  <script type="module" src="/js/app.js"></script>
+</body>
+</html>

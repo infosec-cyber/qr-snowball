@@ -1,0 +1,6 @@
+fastapi==0.115.5
+uvicorn[standard]==0.32.1
+webauthn==2.5.2
+itsdangerous==2.2.0
+python-multipart==0.0.20
+vercel==0.11.6

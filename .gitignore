@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Local data (E2E ciphertext store — still, don't commit)
+backend/data/
+*.sqlite3
+
+# Vercel
+.vercel/
+
+# Env / secrets
+.env
+*.pem
+*.key
+
+# OS
+.DS_Store
