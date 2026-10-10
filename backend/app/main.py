@@ -25,7 +25,11 @@ for r in (webauthn_router, keys_router, tokens_router, connections_router, group
 
 @app.get("/api/health")
 def health():
-    return {"ok": True, "storage": "blob" if store.USE_BLOB else "local-fs"}
+    return {
+        "ok": True,
+        "storage": "blob" if store.USE_BLOB else "local-fs",
+        "blob_auth": store.auth_mode(),  # token | oidc | none
+    }
 
 
 # ---- local-dev static serving (no-op on Vercel, which serves /public itself) ----

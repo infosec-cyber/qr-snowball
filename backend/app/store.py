@@ -23,9 +23,16 @@ import json
 import glob
 from typing import Any
 
-_TOKEN = os.environ.get("BLOB_READ_WRITE_TOKEN")
-# On Vercel the OIDC path sets VERCEL=1 and the SDK resolves credentials itself.
-USE_BLOB = bool(_TOKEN) or bool(os.environ.get("VERCEL"))
+# A static read-write token (either canonical name), or the OIDC pair Vercel
+# injects when a Blob store is connected. We only switch to Blob when we actually
+# have credentials — merely running on Vercel (VERCEL=1) is not enough.
+_TOKEN = os.environ.get("BLOB_READ_WRITE_TOKEN") or os.environ.get("VERCEL_BLOB_READ_WRITE_TOKEN")
+_OIDC = bool(os.environ.get("VERCEL_OIDC_TOKEN") and os.environ.get("BLOB_STORE_ID"))
+USE_BLOB = bool(_TOKEN) or _OIDC
+
+
+def auth_mode() -> str:
+    return "token" if _TOKEN else "oidc" if _OIDC else "none"
 
 _LOCAL_DIR = os.environ.get(
     "RELAY_DATA",
@@ -37,10 +44,13 @@ if USE_BLOB:
     from vercel.blob import BlobNotFoundError
 
     _ACCESS = "private"
+    # Pass the static token when we have one; otherwise let the SDK use the
+    # OIDC credentials Vercel injects.
+    _TOK = {"token": _TOKEN} if _TOKEN else {}
 
     def get_json(path: str) -> dict[str, Any] | None:
         try:
-            res = _blob.get(path, access=_ACCESS, token=_TOKEN, use_cache=False)
+            res = _blob.get(path, access=_ACCESS, use_cache=False, **_TOK)
         except BlobNotFoundError:
             return None
         return json.loads(res.content)
@@ -54,12 +64,12 @@ if USE_BLOB:
             add_random_suffix=False,
             overwrite=True,
             cache_control_max_age=0,
-            token=_TOKEN,
+            **_TOK,
         )
 
     def delete(path: str) -> None:
         try:
-            _blob.delete(path, token=_TOKEN)
+            _blob.delete(path, **_TOK)
         except BlobNotFoundError:
             pass
 
@@ -67,7 +77,7 @@ if USE_BLOB:
         out: list[str] = []
         cursor: str | None = None
         while True:
-            res = _blob.list_objects(prefix=prefix, cursor=cursor, token=_TOKEN)
+            res = _blob.list_objects(prefix=prefix, cursor=cursor, **_TOK)
             out.extend(b.pathname for b in res.blobs)
             if not res.has_more:
                 break
