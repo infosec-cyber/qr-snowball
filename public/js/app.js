@@ -15,11 +15,18 @@ const state = {
   tokenId: null,    // my current share token
 };
 
-// ---- session persistence (ephemeral: sessionStorage, cleared on tab close) ----
+// ---- session persistence ----
+// Keep the unlocked identity on-device for SESSION_TTL so reopening the app
+// doesn't require a fresh passkey tap, matching the 6h server session cookie.
+// Tradeoff: the private keys sit in localStorage (at rest on this device) until
+// they expire or the user signs out — acceptable for a personal device; the
+// zero-knowledge guarantee is about the server, not local storage.
 const SKEY = "relay.session";
+const SESSION_TTL = 6 * 60 * 60 * 1000; // 6 hours
 function saveSession() {
   if (!state.identity) return;
-  sessionStorage.setItem(SKEY, JSON.stringify({
+  localStorage.setItem(SKEY, JSON.stringify({
+    exp: Date.now() + SESSION_TTL,
     userId: state.userId,
     pub_x25519: state.identity.pub_x25519,
     pub_ed25519: state.identity.pub_ed25519,
@@ -28,9 +35,10 @@ function saveSession() {
   }));
 }
 function loadSession() {
-  const raw = sessionStorage.getItem(SKEY);
+  const raw = localStorage.getItem(SKEY);
   if (!raw) return false;
   const s = JSON.parse(raw);
+  if (!s.exp || Date.now() > s.exp) { localStorage.removeItem(SKEY); return false; }
   state.userId = s.userId;
   state.identity = {
     pub_x25519: s.pub_x25519, pub_ed25519: s.pub_ed25519,
@@ -281,7 +289,7 @@ function wire() {
       else if (act === "stop-scan") { await stopScan(); show("home"); renderHome(); }
       else if (act === "new-group") await createGroup();
       else if (act === "copy-link") { navigator.clipboard.writeText(myShareUrl()); toast("Link copied", "ok"); }
-      else if (act === "logout") { sessionStorage.removeItem(SKEY); await api.logout(); location.href = "/"; }
+      else if (act === "logout") { localStorage.removeItem(SKEY); await api.logout(); location.href = "/"; }
     } catch (err) { toast(err.message || String(err), "err"); }
   });
   window.addEventListener("popstate", route);

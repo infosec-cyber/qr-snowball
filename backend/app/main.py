@@ -10,7 +10,7 @@ from fastapi import FastAPI
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from . import store
+from . import store, sessions
 from .routes_webauthn import router as webauthn_router
 from .routes_keys import router as keys_router
 from .routes_tokens import router as tokens_router
@@ -29,6 +29,7 @@ def health():
         "ok": True,
         "storage": "blob" if store.USE_BLOB else "local-fs",
         "blob_auth": store.auth_mode(),  # token | oidc | none
+        "session": "persistent" if sessions.HAS_SECRET else "ephemeral",
     }
 
 
