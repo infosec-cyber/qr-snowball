@@ -2,15 +2,12 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "services": {
     "web": {
-      "root": ".",
-      "outputDirectory": "public"
+      "root": "public"
     },
     "api": {
       "root": ".",
       "framework": "fastapi",
-      "functions": {
-        "api/index.py": { "includeFiles": "backend/**" }
-      }
+      "entrypoint": "api/index.py"
     }
   },
   "rewrites": [
